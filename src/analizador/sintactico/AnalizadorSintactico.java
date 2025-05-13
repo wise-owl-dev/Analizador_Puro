@@ -176,11 +176,23 @@ public class AnalizadorSintactico {
     // asignacionParametro ::= (BASE | CUERPO | GARRA | VELOCIDAD) IGUAL NUMERO
     private void asignacionParametro() {
         TipoToken tipoPropiedad = tokenActual.getTipo();
+        String nombrePropiedad = tokenActual.getLexema(); // Guardar el nombre de la propiedad
+        int linea = tokenActual.getLinea();
+        int columna = tokenActual.getColumna();
         avanzar(); // Consumir el nombre de propiedad
 
         if (coincidir(TipoToken.IGUAL)) {
             if (tokenActual.getTipo() == TipoToken.NUMERO) {
                 int valor = (int) tokenActual.getValor();
+
+                // Actualizar en la tabla de símbolos con línea y columna
+                tablaSimbolo.actualizarMetodo(nombrePropiedad, valor, linea, columna);
+
+                // AÑADIR AQUÍ: Almacenar el valor en la tabla de símbolos
+                SimboloInfo metodoInfo = tablaSimbolo.getMetodoInfo(nombrePropiedad);
+                if (metodoInfo != null) {
+                    metodoInfo.setValor(valor); // Guardar el valor asignado
+                }
 
                 // Validar rangos según el tipo de propiedad
                 switch (tipoPropiedad) {
@@ -220,21 +232,36 @@ public class AnalizadorSintactico {
     // (ABRIR_GARRA | CERRAR_GARRA) PARENTESIS_A PARENTESIS_C
     private void llamadaMetodo() {
         TipoToken tipoMetodo = tokenActual.getTipo();
+        String nombreMetodo = tokenActual.getLexema(); // Guardar el nombre del método
+        int linea = tokenActual.getLinea();
+        int columna = tokenActual.getColumna();
         avanzar(); // Consumir el nombre del método
 
         // Métodos sin parámetros
         if (tipoMetodo == TipoToken.INICIAR || tipoMetodo == TipoToken.DETENER) {
-            return; // No hay más que procesar
+            // Actualizar posición aunque no tenga parámetros
+            tablaSimbolo.actualizarMetodo(nombreMetodo, null, linea, columna);
+            return;
         }
 
         // Métodos con parámetros
         if (coincidir(TipoToken.PARENTESIS_A)) {
             if (tipoMetodo == TipoToken.ABRIR_GARRA || tipoMetodo == TipoToken.CERRAR_GARRA) {
-                // Métodos sin argumentos pero con paréntesis
+                // Actualizar posición
+                tablaSimbolo.actualizarMetodo(nombreMetodo, null, linea, columna);
                 consumir(TipoToken.PARENTESIS_C, "Se esperaba ')'");
             } else if (tokenActual.getTipo() == TipoToken.NUMERO) {
                 // Métodos con argumentos numéricos
                 int valor = (int) tokenActual.getValor();
+
+                // Actualizar valor y posición
+                tablaSimbolo.actualizarMetodo(nombreMetodo, valor, linea, columna);
+
+                // AÑADIR AQUÍ: Almacenar el valor en la tabla de símbolos
+                SimboloInfo metodoInfo = tablaSimbolo.getMetodoInfo(nombreMetodo);
+                if (metodoInfo != null) {
+                    metodoInfo.setValor(valor); // Guardar el valor pasado al método
+                }
 
                 // Validar rangos según el tipo de método
                 switch (tipoMetodo) {

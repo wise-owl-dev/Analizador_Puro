@@ -14,18 +14,17 @@ public class TablaTokens {
 
     public void mostrarTabla() {
         System.out.println("\n===== TABLA DE TOKENS =====");
-        System.out.println(String.format("%-20s %-15s %-10s %-10s %-10s",
-                "LEXEMA", "TIPO", "LÍNEA", "COLUMNA", "VALOR"));
-        System.out.println("---------------------------------------------------------------");
+        System.out.println(String.format("%-20s %-15s %-10s %-10s",
+                "LEXEMA", "TIPO", "LÍNEA", "COLUMNA"));
+        System.out.println("-------------------------------------------------------");
 
         for (Token token : tokens) {
             if (token.getTipo() != TipoToken.EOF) {
-                System.out.println(String.format("%-20s %-15s %-10d %-10d %-10s",
+                System.out.println(String.format("%-20s %-15s %-10d %-10d",
                         "'" + token.getLexema() + "'",
                         token.getTipo(),
                         token.getLinea(),
-                        token.getColumna(),
-                        token.getValor() != null ? token.getValor() : ""));
+                        token.getColumna()));
             }
         }
         System.out.println("===========================\n");

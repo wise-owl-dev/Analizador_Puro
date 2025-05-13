@@ -28,6 +28,16 @@ public class TablaSimbolo {
         agregarMetodo("detener", 0, 0, 0);
     }
 
+    // Actualiza un método con valor, línea y columna
+    public void actualizarMetodo(String nombre, Object valor, int linea, int columna) {
+        SimboloInfo metodo = metodos.get(nombre);
+        if (metodo != null) {
+            metodo.setValor(valor);
+            metodo.setLinea(linea);
+            metodo.setColumna(columna);
+        }
+    }
+
     // Agrega un símbolo a la tabla
     public boolean agregarSimbolo(String nombre, String tipo) {
         if (!simbolos.containsKey(nombre)) {
@@ -44,6 +54,14 @@ public class TablaSimbolo {
             return true;
         }
         return false;
+    }
+
+    // Actualiza el valor de un método
+    public void actualizarValorMetodo(String nombre, Object valor) {
+        SimboloInfo metodo = metodos.get(nombre);
+        if (metodo != null) {
+            metodo.setValor(valor);
+        }
     }
 
     // Agrega un método a la tabla con sus rangos

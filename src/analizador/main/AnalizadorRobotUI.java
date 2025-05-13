@@ -8,6 +8,7 @@ import javax.swing.text.*;
 import analizador.lexico.AnalizadorLexico;
 import analizador.lexico.TipoToken;
 import analizador.lexico.Token;
+import analizador.main.AnalizadorRobotUI.LineNumberPanel;
 import analizador.sintactico.AnalizadorSintactico;
 import analizador.sintactico.SimboloInfo;
 import analizador.sintactico.TablaSimbolo;
@@ -88,7 +89,7 @@ public class AnalizadorRobotUI extends JFrame {
         // Tabla de tokens
         modeloTokens = new DefaultTableModel(
                 new Object[][] {},
-                new String[] { "Lexema", "Tipo Token", "Línea", "Columna", "Valor" });
+                new String[] { "Lexema", "Tipo Token", "Línea", "Columna" });
         tablaTokens = new JTable(modeloTokens);
 
         // Área de errores en lugar de tabla
@@ -100,7 +101,7 @@ public class AnalizadorRobotUI extends JFrame {
         // Tabla de símbolos
         modeloSimbolos = new DefaultTableModel(
                 new Object[][] {},
-                new String[] { "Nombre", "Tipo", "Parámetros", "Rango", "Línea", "Columna" });
+                new String[] { "Nombre", "Tipo", "Valor", "Parámetros", "Rango", "Línea", "Columna" });
         tablaSimbolos = new JTable(modeloSimbolos) {
             @Override
             public Class<?> getColumnClass(int column) {
@@ -445,8 +446,7 @@ public class AnalizadorRobotUI extends JFrame {
                             token.getLexema(),
                             token.getTipo(),
                             token.getLinea(),
-                            token.getColumna(),
-                            token.getValor() != null ? token.getValor().toString() : ""
+                            token.getColumna()
                     });
                 }
             }
@@ -828,12 +828,16 @@ public class AnalizadorRobotUI extends JFrame {
             modeloSimbolos.removeRow(0);
         }
 
+        // Conjunto para rastrear los métodos ya añadidos
+        Set<String> metodosAgregados = new HashSet<>();
+
         // Primero mostrar los robots (símbolos definidos por el usuario)
         for (SimboloInfo simbolo : tablaSimbolo.getSimbolos()) {
             if (simbolo.getTipo().equals("ROBOT")) {
                 modeloSimbolos.addRow(new Object[] {
                         simbolo.getNombre(),
                         simbolo.getTipo(),
+                        simbolo.getValor() != null ? simbolo.getValor().toString() : "",
                         0, // Sin parámetros para robots
                         "", // Sin rango para robots
                         simbolo.getLinea(),
@@ -842,8 +846,20 @@ public class AnalizadorRobotUI extends JFrame {
             }
         }
 
-        // Luego mostrar los métodos predefinidos
-        for (SimboloInfo metodo : tablaSimbolo.getMetodos()) {
+        // Luego mostrar los métodos (pero solo una vez cada uno)
+        List<SimboloInfo> todosLosMetodos = tablaSimbolo.getMetodos();
+
+        // Ordenar métodos por nombre para mantener consistencia
+        Collections.sort(todosLosMetodos, Comparator.comparing(SimboloInfo::getNombre));
+
+        for (SimboloInfo metodo : todosLosMetodos) {
+            // Si ya agregamos este método, saltarlo
+            if (metodosAgregados.contains(metodo.getNombre())) {
+                continue;
+            }
+
+            metodosAgregados.add(metodo.getNombre());
+
             String rangoStr = "";
 
             if (metodo.getNumParametros() > 0) {
@@ -863,20 +879,22 @@ public class AnalizadorRobotUI extends JFrame {
             modeloSimbolos.addRow(new Object[] {
                     metodo.getNombre(),
                     "METODO",
+                    metodo.getValor() != null ? metodo.getValor().toString() : "",
                     metodo.getNumParametros(),
                     rangoStr,
-                    0, // Línea 0 para métodos predefinidos
-                    0 // Columna 0 para métodos predefinidos
+                    metodo.getLinea(), // Usar la línea almacenada
+                    metodo.getColumna() // Usar la columna almacenada
             });
         }
 
         // Configurar el ancho de las columnas
         tablaSimbolos.getColumnModel().getColumn(0).setPreferredWidth(100); // Nombre
         tablaSimbolos.getColumnModel().getColumn(1).setPreferredWidth(80); // Tipo
-        tablaSimbolos.getColumnModel().getColumn(2).setPreferredWidth(80); // Parámetros
-        tablaSimbolos.getColumnModel().getColumn(3).setPreferredWidth(100); // Rango
-        tablaSimbolos.getColumnModel().getColumn(4).setPreferredWidth(50); // Línea
-        tablaSimbolos.getColumnModel().getColumn(5).setPreferredWidth(80); // Columna
+        tablaSimbolos.getColumnModel().getColumn(2).setPreferredWidth(80); // Valor
+        tablaSimbolos.getColumnModel().getColumn(3).setPreferredWidth(80); // Parámetros
+        tablaSimbolos.getColumnModel().getColumn(4).setPreferredWidth(100); // Rango
+        tablaSimbolos.getColumnModel().getColumn(5).setPreferredWidth(50); // Línea
+        tablaSimbolos.getColumnModel().getColumn(6).setPreferredWidth(80); // Columna
     }
 
     /**

@@ -84,6 +84,14 @@ public class SimboloInfo {
         this.valor = valor;
     }
 
+    public void setLinea(int linea) {
+        this.linea = linea;
+    }
+
+    public void setColumna(int columna) {
+        this.columna = columna;
+    }
+
     @Override
     public String toString() {
         return "SimboloInfo[nombre=" + nombre + ", tipo=" + tipo + ", valor=" + valor +
